@@ -13,14 +13,13 @@ function AirJump.new(config)
     self.Enabled = false
     self.Active = true
     self.Power = (config and config.Data and config.Data.Settings.AirJumpPower) or 50
-    print("[AirJump] new() - Power:", tostring(self.Power))
     self.Connections = {}
+    print("[AirJump] new() - Power:", tostring(self.Power))
     return self
 end
 
--- Retorna true se executou o air jump (para o main saber)
 function AirJump:TryJump()
-    print("[AirJump] TryJump() called")
+    print("[AirJump] TryJump()")
     if not self.Active or not self.Enabled then
         print("[AirJump] not active or not enabled")
         return false
@@ -33,14 +32,12 @@ function AirJump:TryJump()
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if humanoid and hrp then
-        -- Só ativa se NÃO estiver no chão
         if not humanoid:IsDescendantOf(workspace) then
             print("[AirJump] humanoid not descendant of workspace")
             return false
         end
         local state = humanoid:GetState()
-        if state ~= Enum.HumanoidStateType.Freefall 
-           and state ~= Enum.HumanoidStateType.Jumping then
+        if state ~= Enum.HumanoidStateType.Freefall and state ~= Enum.HumanoidStateType.Jumping then
             print("[AirJump] humanoid state not jump/freefall ->", tostring(state))
             return false
         end
