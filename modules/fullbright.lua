@@ -105,3 +105,4 @@ function FullBright:Destroy()
 end
 
 return FullBright
+print("Carregando fullbright.lua")
