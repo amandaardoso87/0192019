@@ -107,3 +107,4 @@ function CameraZoom:Destroy()
 end
 
 return CameraZoom
+print("Carregando camerazoom.lua")
