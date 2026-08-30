@@ -5,6 +5,8 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
+print("[modules/aimassist.lua] loading")
+
 local AimAssist = {}
 AimAssist.__index = AimAssist
 
@@ -17,6 +19,8 @@ function AimAssist.new(config, circle)
     self.Aiming = false
     self.Active = true
     self.Connections = {}
+
+    print("[AimAssist] new() - config:", tostring(config ~= nil), "circle:", tostring(circle ~= nil))
     
     return self
 end
@@ -91,6 +95,7 @@ function AimAssist:GetClosestTarget()
 end
 
 function AimAssist:Start()
+    print("[AimAssist] Start() called")
     -- BindToRenderStep para o snap da câmera
     RunService:BindToRenderStep("AimAssistSnap", Enum.RenderPriority.Camera.Value + 2, function()
         if not self.Active or not self.Enabled or not self.Aiming then return end
@@ -117,10 +122,12 @@ function AimAssist:Toggle()
     self.Config.Data.Settings.AimAssist = self.Enabled
     self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
     self.Config.Save()
+    print("[AimAssist] Toggle() ->", tostring(self.Enabled))
     return self.Enabled
 end
 
 function AimAssist:Destroy()
+    print("[AimAssist] Destroy() called")
     self.Active = false
     self.Enabled = false
     self.Aiming = false
@@ -131,5 +138,6 @@ function AimAssist:Destroy()
     self.Connections = {}
 end
 
+print("[modules/aimassist.lua] loaded")
+
 return AimAssist
-print("Carregando camerazoom.lua")
