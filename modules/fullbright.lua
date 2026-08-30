@@ -1,5 +1,8 @@
+-- https://raw.githubusercontent.com/SEU_USER/UniversalHax/main/modules/fullbright.lua
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
+
+print("[modules/fullbright.lua] loaded")
 
 local FullBright = {}
 FullBright.__index = FullBright
@@ -9,8 +12,9 @@ function FullBright.new(config)
     self.Config = config
     self.Enabled = false
     self.Active = true
-    self.Intensity = config.Data.Settings.FullBrightIntensity or 3
+    self.Intensity = (config and config.Data and config.Data.Settings.FullBrightIntensity) or 3
     self.Connections = {}
+    print("[FullBright] new() - intensity:", tostring(self.Intensity))
     
     -- Salva originals
     self.Originals = {
@@ -64,6 +68,7 @@ function FullBright:Restore()
 end
 
 function FullBright:Start()
+    print("[FullBright] Start()")
     -- Monitora pra caso o jogo resetar a iluminação
     table.insert(self.Connections, RunService.RenderStepped:Connect(function()
         if not self.Active or not self.Enabled then return end
@@ -76,6 +81,7 @@ end
 function FullBright:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.FullBright = self.Enabled
+    print("[FullBright] Toggle() ->", tostring(self.Enabled))
     if self.Enabled then
         self:Apply()
     else
@@ -88,6 +94,7 @@ end
 function FullBright:SetIntensity(value)
     self.Intensity = value
     self.Config.Data.Settings.FullBrightIntensity = value
+    print("[FullBright] SetIntensity ->", tostring(value))
     if self.Enabled then
         self:Apply()
     end
@@ -95,6 +102,7 @@ function FullBright:SetIntensity(value)
 end
 
 function FullBright:Destroy()
+    print("[FullBright] Destroy()")
     self.Active = false
     self.Enabled = false
     self:Restore()
@@ -105,4 +113,3 @@ function FullBright:Destroy()
 end
 
 return FullBright
-print("Carregando fullbright.lua")
