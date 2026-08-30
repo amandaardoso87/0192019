@@ -25,7 +25,11 @@ ConfigModule.Defaults = {
         SpeedValue = 16,
         Fly = false,
         FlySpeed = 50,
-        Noclip = false
+        Noclip = false,
+        CameraZoom = false,
+        CameraZoomDistance = 500,
+        FullBright = false,
+        FullBrightIntensity = 3
     }
 }
 
@@ -80,6 +84,8 @@ function ConfigModule.ForceOff()
     ConfigModule.Data.Settings.SpeedEnabled = false
     ConfigModule.Data.Settings.Fly = false
     ConfigModule.Data.Settings.Noclip = false
+    ConfigModule.Data.Settings.CameraZoom = false
+    ConfigModule.Data.Settings.FullBright = false
 end
 
 return ConfigModule
