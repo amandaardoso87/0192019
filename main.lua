@@ -4,7 +4,7 @@
 -- ============================================
 
 -- Base URL do seu repositório (troque SEU_USER pelo seu nome de usuário do GitHub)
-local BASE_URL = "https://raw.githubusercontent.com/SEU_USER/UniversalHax/main"
+local BASE_URL = "https://raw.githubusercontent.com/amandaardoso87/0192019/main"
 
 -- Função para carregar módulo remoto
 local function LoadModule(path)
