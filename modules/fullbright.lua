@@ -1,4 +1,3 @@
--- https://raw.githubusercontent.com/SEU_USER/UniversalHax/main/modules/fullbright.lua
 local RunService = game:GetService("RunService")
 local Lighting = game:GetService("Lighting")
 
@@ -16,7 +15,6 @@ function FullBright.new(config)
     self.Connections = {}
     print("[FullBright] new() - intensity:", tostring(self.Intensity))
     
-    -- Salva originals
     self.Originals = {
         Brightness = Lighting.Brightness,
         Ambient = Lighting.Ambient,
@@ -28,7 +26,6 @@ function FullBright.new(config)
         AtmosphereDensity = 0
     }
     
-    -- Salva atmosphere se existir
     self.Atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
     if self.Atmosphere then
         self.Originals.AtmosphereDensity = self.Atmosphere.Density
@@ -69,7 +66,6 @@ end
 
 function FullBright:Start()
     print("[FullBright] Start()")
-    -- Monitora pra caso o jogo resetar a iluminação
     table.insert(self.Connections, RunService.RenderStepped:Connect(function()
         if not self.Active or not self.Enabled then return end
         if Lighting.Brightness ~= self.Intensity then
