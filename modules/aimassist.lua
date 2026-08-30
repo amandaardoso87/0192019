@@ -5,7 +5,7 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-print("[modules/aimassist.lua] loading")
+print("[modules/aimassist.lua] loaded")
 
 local AimAssist = {}
 AimAssist.__index = AimAssist
@@ -95,8 +95,7 @@ function AimAssist:GetClosestTarget()
 end
 
 function AimAssist:Start()
-    print("[AimAssist] Start() called")
-    -- BindToRenderStep para o snap da câmera
+    print("[AimAssist] Start()")
     RunService:BindToRenderStep("AimAssistSnap", Enum.RenderPriority.Camera.Value + 2, function()
         if not self.Active or not self.Enabled or not self.Aiming then return end
         local target = self:GetClosestTarget()
@@ -105,29 +104,33 @@ function AimAssist:Start()
         end
     end)
 
-    -- Atualiza o círculo
     table.insert(self.Connections, RunService.RenderStepped:Connect(function()
         if not self.Active then return end
-        self.Circle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-        self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
+        if self.Circle then
+            self.Circle.Position = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+            self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
+        end
     end))
 end
 
 function AimAssist:SetAiming(state)
     self.Aiming = state
+    print("[AimAssist] SetAiming ->", tostring(state))
 end
 
 function AimAssist:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.AimAssist = self.Enabled
-    self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
+    if self.Circle then
+        self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
+    end
     self.Config.Save()
     print("[AimAssist] Toggle() ->", tostring(self.Enabled))
     return self.Enabled
 end
 
 function AimAssist:Destroy()
-    print("[AimAssist] Destroy() called")
+    print("[AimAssist] Destroy()")
     self.Active = false
     self.Enabled = false
     self.Aiming = false
@@ -137,7 +140,5 @@ function AimAssist:Destroy()
     end
     self.Connections = {}
 end
-
-print("[modules/aimassist.lua] loaded")
 
 return AimAssist
