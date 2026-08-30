@@ -1,12 +1,9 @@
--- https://raw.githubusercontent.com/SEU_USER/UniversalHax/main/main.lua
 -- ============================================
 -- UNIVERSAL HAX - MODULAR LOADER
 -- ============================================
 
--- Base URL do seu repositório (troque SEU_USER pelo seu nome de usuário do GitHub)
 local BASE_URL = "https://raw.githubusercontent.com/amandaardoso87/0192019/main"
 
--- Função para carregar módulo remoto
 local function LoadModule(path)
     local success, content = pcall(function()
         return game:HttpGet(BASE_URL .. "/" .. path)
@@ -23,10 +20,8 @@ local function LoadModule(path)
     return fn()
 end
 
--- Carregar biblioteca de UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Neospeed1kk/RochaFace/refs/heads/main/gui.lua"))()
 
--- Carregar Config
 local Config = LoadModule("config.lua")
 if not Config then
     warn("❌ Não foi possível carregar o config. Script abortado.")
@@ -35,44 +30,43 @@ end
 Config.Load()
 Config.ForceOff()
 
--- Carregar Módulos
-local CameraZoom = LoadModule("modules/camerazoom.lua")
-local FullBright = LoadModule("modules/fullbright.lua")
 local AimAssist = LoadModule("modules/aimassist.lua")
 local ESP = LoadModule("modules/esp.lua")
 local Fly = LoadModule("modules/fly.lua")
 local Noclip = LoadModule("modules/noclip.lua")
 local Speed = LoadModule("modules/speed.lua")
 local AirJump = LoadModule("modules/airjump.lua")
+local CameraZoom = LoadModule("modules/camerazoom.lua")
+local FullBright = LoadModule("modules/fullbright.lua")
 
--- Círculo do FOV
 local circle = Drawing.new("Circle")
 circle.Radius = Config.Data.Settings.FOV
 circle.Visible = false
 circle.Thickness = 2
 circle.Color = Color3.new(1, 1, 1)
 
--- Instanciar módulos
 local aim = AimAssist and AimAssist.new(Config, circle) or nil
 local esp = ESP and ESP.new(Config) or nil
 local fly = Fly and Fly.new(Config) or nil
 local noclip = Noclip and Noclip.new(Config) or nil
 local speed = Speed and Speed.new(Config) or nil
 local airjump = AirJump and AirJump.new(Config) or nil
+local camerazoom = CameraZoom and CameraZoom.new(Config) or nil
+local fullbright = FullBright and FullBright.new(Config) or nil
 
--- Iniciar módulos
 if aim then aim:Start() end
 if esp then esp:Start() end
 if fly then fly:Start() end
 if noclip then noclip:Start() end
 if speed then speed:Start() end
+if camerazoom then camerazoom:Start() end
+if fullbright then fullbright:Start() end
 
--- Tabela de todas as connections do loader
 local loaderConnections = {}
 local scriptAtivo = true
 
 -- ============================================
--- CRIAR GUI
+-- GUI
 -- ============================================
 local Combat = Library:CreateCategory("Combate", UDim2.new(0, 50, 0, 100))
 local Movement = Library:CreateCategory("Movimento", UDim2.new(0, 250, 0, 100))
@@ -170,22 +164,43 @@ if esp then
     ESPModule.Enabled = esp.Enabled
 end
 
+if fullbright then
+    local FBModule = Visual:AddModule("FullBright", function(estado)
+        fullbright:Toggle()
+    end, false)
+    FBModule.Enabled = fullbright.Enabled
+
+    FBModule:AddSlider("Intensidade", 1, 10, fullbright.Intensity, function(valor)
+        fullbright:SetIntensity(valor)
+    end)
+end
+
+if camerazoom then
+    local CZModule = Visual:AddModule("Camera Zoom", function(estado)
+        camerazoom:Toggle()
+    end, false)
+    CZModule.Enabled = camerazoom.Enabled
+
+    CZModule:AddSlider("Distância Máxima", 100, 5000, camerazoom.MaxDistance, function(valor)
+        camerazoom:SetDistance(valor)
+    end)
+end
+
 -- --- UTILITÁRIOS ---
 Utils:AddModule("Salvar Config", function()
     Config.Save()
     print("💾 Salvo!")
 end, true)
 
-Utils:AddModule("Remover Script", function()
-    -- Destroi todos os módulos
+local function cleanupCompleto()
     if aim then aim:Destroy() end
     if esp then esp:Destroy() end
     if fly then fly:Destroy() end
     if noclip then noclip:Destroy() end
     if speed then speed:Destroy() end
     if airjump then airjump:Destroy() end
-    
-    -- Limpa o loader
+    if camerazoom then camerazoom:Destroy() end
+    if fullbright then fullbright:Destroy() end
     scriptAtivo = false
     pcall(function() circle:Remove() end)
     for _, conn in pairs(loaderConnections) do
@@ -196,47 +211,34 @@ Utils:AddModule("Remover Script", function()
         if gui then gui:Destroy() end
     end)
     print("🗑️ Script removido por completo!")
-end, true)
+end
+
+Utils:AddModule("Remover Script", cleanupCompleto, true)
 
 -- ============================================
--- INPUT (Mouse + Teclado K + Air Jump)
+-- INPUT
 -- ============================================
 local UserInputService = game:GetService("UserInputService")
 
 table.insert(loaderConnections, UserInputService.InputBegan:Connect(function(input, gp)
     if gp and input.UserInputType == Enum.UserInputType.Keyboard then return end
-    
-    -- K = remove tudo
+
     if input.KeyCode == Enum.KeyCode.K then
-        if aim then aim:Destroy() end
-        if esp then esp:Destroy() end
-        if fly then fly:Destroy() end
-        if noclip then noclip:Destroy() end
-        if speed then speed:Destroy() end
-        if airjump then airjump:Destroy() end
-        scriptAtivo = false
-        pcall(function() circle:Remove() end)
-        for _, conn in pairs(loaderConnections) do
-            pcall(function() conn:Disconnect() end)
-        end
-        pcall(function()
-            local gui = game:GetService("CoreGui"):FindFirstChild("ManusGuiLib")
-            if gui then gui:Destroy() end
-        end)
+        cleanupCompleto()
         return
     end
 
-    -- Botão direito = aiming
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         if aim then aim:SetAiming(true) end
     end
 
-    -- Space = air jump (só se fly NÃO estiver ativo)
     if input.KeyCode == Enum.KeyCode.Space then
-        if airjump and fly and not fly.Enabled then
-            airjump:TryJump()
-        elseif airjump and not fly then
-            airjump:TryJump()
+        if airjump then
+            if fly and not fly.Enabled then
+                airjump:TryJump()
+            elseif not fly then
+                airjump:TryJump()
+            end
         end
     end
 end))
@@ -257,11 +259,7 @@ end
 
 Library:AddKeybind("Aim Assist", getKeyCode(Config.Data.Keybinds.AimAssist), function(key, pressed)
     if pressed then
-        if aim then
-            local newState = aim:Toggle()
-            -- Atualiza visual do botão (simplificado)
-            Config.Save()
-        end
+        if aim then aim:Toggle() end
     else
         Config.Data.Keybinds.AimAssist = key.Name
         Config.Save()
@@ -286,7 +284,7 @@ Library:AddKeybind("Air Jump", getKeyCode(Config.Data.Keybinds.AirJump), functio
     end
 end)
 
--- Auto-save a cada 10s
+-- Auto-save
 task.spawn(function()
     while scriptAtivo do
         task.wait(10)
@@ -295,5 +293,3 @@ task.spawn(function()
 end)
 
 print("✅ Universal Hax (MODULAR) carregado!")
-print("🔹 Cada módulo é carregado separadamente do GitHub.")
-print("🔹 Para adicionar algo novo, só crie um novo arquivo em modules/")
