@@ -3,6 +3,8 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
+print("[modules/noclip.lua] loaded")
+
 local Noclip = {}
 Noclip.__index = Noclip
 
@@ -12,6 +14,7 @@ function Noclip.new(config)
     self.Enabled = false
     self.Active = true
     self.Connections = {}
+    print("[Noclip] new() - config:", tostring(config ~= nil))
     return self
 end
 
@@ -26,7 +29,7 @@ function Noclip:RestoreCollision()
 end
 
 function Noclip:Start()
-    -- Stepped roda ANTES da física = mais confiável
+    print("[Noclip] Start()")
     table.insert(self.Connections, RunService.Stepped:Connect(function()
         if not self.Active or not self.Enabled then return end
         local char = LocalPlayer.Character
@@ -42,6 +45,7 @@ end
 function Noclip:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.Noclip = self.Enabled
+    print("[Noclip] Toggle() ->", tostring(self.Enabled))
     if not self.Enabled then
         self:RestoreCollision()
     end
@@ -50,6 +54,7 @@ function Noclip:Toggle()
 end
 
 function Noclip:Destroy()
+    print("[Noclip] Destroy()")
     self.Active = false
     self.Enabled = false
     self:RestoreCollision()
