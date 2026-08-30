@@ -36,6 +36,8 @@ Config.Load()
 Config.ForceOff()
 
 -- Carregar Módulos
+local CameraZoom = LoadModule("modules/camerazoom.lua")
+local FullBright = LoadModule("modules/fullbright.lua")
 local AimAssist = LoadModule("modules/aimassist.lua")
 local ESP = LoadModule("modules/esp.lua")
 local Fly = LoadModule("modules/fly.lua")
