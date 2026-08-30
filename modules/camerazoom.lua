@@ -12,8 +12,8 @@ function CameraZoom.new(config)
     self.Active = true
     self.MaxDistance = config.Data.Settings.CameraZoomDistance or 500
     self.Connections = {}
-    self.OriginalMax = Camera.CameraMaxZoomDistance
-    self.OriginalMin = Camera.CameraMinZoomDistance
+    self.OriginalMax = Camera.MaxZoomDistance
+    self.OriginalMin = Camera.MinZoomDistance
     return self
 end
 
@@ -21,12 +21,11 @@ function CameraZoom:Start()
     table.insert(self.Connections, RunService.RenderStepped:Connect(function()
         if not self.Active then return end
         if not self.Enabled then return end
-        -- Força toda frame porque alguns jogos resetam em loop
-        if Camera.CameraMaxZoomDistance ~= self.MaxDistance then
-            Camera.CameraMaxZoomDistance = self.MaxDistance
+        if Camera.MaxZoomDistance ~= self.MaxDistance then
+            Camera.MaxZoomDistance = self.MaxDistance
         end
-        if Camera.CameraMinZoomDistance ~= 0.5 then
-            Camera.CameraMinZoomDistance = 0.5
+        if Camera.MinZoomDistance ~= 0.5 then
+            Camera.MinZoomDistance = 0.5
         end
     end))
 end
@@ -35,11 +34,11 @@ function CameraZoom:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.CameraZoom = self.Enabled
     if self.Enabled then
-        Camera.CameraMaxZoomDistance = self.MaxDistance
-        Camera.CameraMinZoomDistance = 0.5
+        Camera.MaxZoomDistance = self.MaxDistance
+        Camera.MinZoomDistance = 0.5
     else
-        Camera.CameraMaxZoomDistance = self.OriginalMax
-        Camera.CameraMinZoomDistance = self.OriginalMin
+        Camera.MaxZoomDistance = self.OriginalMax
+        Camera.MinZoomDistance = self.OriginalMin
     end
     self.Config.Save()
     return self.Enabled
@@ -49,7 +48,7 @@ function CameraZoom:SetDistance(value)
     self.MaxDistance = value
     self.Config.Data.Settings.CameraZoomDistance = value
     if self.Enabled then
-        Camera.CameraMaxZoomDistance = value
+        Camera.MaxZoomDistance = value
     end
     self.Config.Save()
 end
@@ -57,8 +56,8 @@ end
 function CameraZoom:Destroy()
     self.Active = false
     self.Enabled = false
-    Camera.CameraMaxZoomDistance = self.OriginalMax
-    Camera.CameraMinZoomDistance = self.OriginalMin
+    Camera.MaxZoomDistance = self.OriginalMax
+    Camera.MinZoomDistance = self.OriginalMin
     for _, conn in pairs(self.Connections) do
         pcall(function() conn:Disconnect() end)
     end
