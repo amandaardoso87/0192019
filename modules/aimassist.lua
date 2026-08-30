@@ -132,3 +132,4 @@ function AimAssist:Destroy()
 end
 
 return AimAssist
+print("Carregando camerazoom.lua")
