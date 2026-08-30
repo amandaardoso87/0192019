@@ -5,6 +5,8 @@ local UserInputService = game:GetService("UserInputService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
+print("[modules/fly.lua] loaded")
+
 local Fly = {}
 Fly.__index = Fly
 
@@ -14,10 +16,11 @@ function Fly.new(config)
     self.Config = config
     self.Enabled = false
     self.Active = true
-    self.Speed = config.Data.Settings.FlySpeed or 50
+    self.Speed = (config and config.Data and config.Data.Settings.FlySpeed) or 50
     self.BodyVel = nil
     self.BodyGyro = nil
     self.Connections = {}
+    print("[Fly] new() - Speed:", tostring(self.Speed))
     
     return self
 end
@@ -38,13 +41,10 @@ function Fly:EnsureParts()
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if not hrp then return nil end
     
-    -- Se já existem e estão no personagem certo, reusa
-    if self.BodyVel and self.BodyVel.Parent == hrp 
-       and self.BodyGyro and self.BodyGyro.Parent == hrp then
+    if self.BodyVel and self.BodyVel.Parent == hrp and self.BodyGyro and self.BodyGyro.Parent == hrp then
         return hrp
     end
     
-    -- Recria
     self:StopPhysics()
     
     self.BodyVel = Instance.new("BodyVelocity")
@@ -62,6 +62,7 @@ function Fly:EnsureParts()
 end
 
 function Fly:Start()
+    print("[Fly] Start()")
     table.insert(self.Connections, RunService.RenderStepped:Connect(function()
         if not self.Active or not self.Enabled then return end
         
@@ -103,6 +104,7 @@ end
 function Fly:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.Fly = self.Enabled
+    print("[Fly] Toggle() ->", tostring(self.Enabled))
     if not self.Enabled then
         self:StopPhysics()
     end
@@ -113,10 +115,12 @@ end
 function Fly:SetSpeed(value)
     self.Speed = value
     self.Config.Data.Settings.FlySpeed = value
+    print("[Fly] SetSpeed ->", tostring(value))
     self.Config.Save()
 end
 
 function Fly:Destroy()
+    print("[Fly] Destroy()")
     self.Active = false
     self.Enabled = false
     self:StopPhysics()
