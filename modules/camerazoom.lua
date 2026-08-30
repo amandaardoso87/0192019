@@ -5,6 +5,8 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 
+print("[modules/camerazoom.lua] loaded")
+
 local CameraZoom = {}
 CameraZoom.__index = CameraZoom
 
@@ -14,24 +16,26 @@ function CameraZoom.new(config)
     self.Config = config
     self.Enabled = false
     self.Active = true
-    self.MaxDistance = config.Data.Settings.CameraZoomDistance or 500
+    self.MaxDistance = (config and config.Data and config.Data.Settings.CameraZoomDistance) or 500
     self.Connections = {}
-    
+    print("[CameraZoom] new() - MaxDistance:", tostring(self.MaxDistance))
+
     -- Obtém o jogador local
     self.Player = Players.LocalPlayer
     if not self.Player then
         error("LocalPlayer não encontrado")
     end
-    
+
     -- Armazena os valores originais do jogador
     self.OriginalMax = self.Player.CameraMaxZoomDistance
     self.OriginalMin = self.Player.CameraMinZoomDistance
-    
+
     return self
 end
 
 -- Inicializa o módulo (conecta eventos)
 function CameraZoom:Start()
+    print("[CameraZoom] Start()")
     -- Aplica o estado atual se estiver ativo
     if self.Enabled then
         self.Player.CameraMaxZoomDistance = self.MaxDistance
@@ -53,6 +57,7 @@ end
 function CameraZoom:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.CameraZoom = self.Enabled
+    print("[CameraZoom] Toggle() ->", tostring(self.Enabled))
     
     if self.Enabled then
         self.Player.CameraMaxZoomDistance = self.MaxDistance
@@ -71,6 +76,7 @@ function CameraZoom:SetDistance(value)
     value = tonumber(value) or 500
     self.MaxDistance = value
     self.Config.Data.Settings.CameraZoomDistance = value
+    print("[CameraZoom] SetDistance ->", tostring(value))
     
     if self.Enabled then
         self.Player.CameraMaxZoomDistance = value
@@ -90,6 +96,7 @@ end
 
 -- Restaura valores originais e limpa conexões
 function CameraZoom:Destroy()
+    print("[CameraZoom] Destroy()")
     self.Active = false
     self.Enabled = false
     
@@ -107,4 +114,3 @@ function CameraZoom:Destroy()
 end
 
 return CameraZoom
-print("Carregando camerazoom.lua")
