@@ -5,6 +5,8 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
+print("[modules/esp.lua] loaded")
+
 local ESP = {}
 ESP.__index = ESP
 
@@ -16,6 +18,7 @@ function ESP.new(config)
     self.Highlights = {}
     self.Drawings = {}
     self.Connections = {}
+    print("[ESP] new() - config:", tostring(config ~= nil))
     return self
 end
 
@@ -68,6 +71,7 @@ function ESP:ApplyToAll()
 end
 
 function ESP:Start()
+    print("[ESP] Start()")
     -- Setup jogadores existentes
     for _, plr in pairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer then
@@ -173,6 +177,7 @@ end
 function ESP:Toggle()
     self.Enabled = not self.Enabled
     self.Config.Data.Settings.ESPEnabled = self.Enabled
+    print("[ESP] Toggle() ->", tostring(self.Enabled))
     if not self.Enabled then
         self:RemoveAll()
     else
@@ -183,6 +188,7 @@ function ESP:Toggle()
 end
 
 function ESP:Destroy()
+    print("[ESP] Destroy()")
     self.Active = false
     self.Enabled = false
     self:RemoveAll()
