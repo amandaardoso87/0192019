@@ -1,27 +1,20 @@
--- https://raw.githubusercontent.com/SEU_USER/UniversalHax/main/modules/aimassist.lua
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
-print("[modules/aimassist.lua] loaded")
-
 local AimAssist = {}
 AimAssist.__index = AimAssist
 
 function AimAssist.new(config, circle)
     local self = setmetatable({}, AimAssist)
-    
     self.Config = config
     self.Circle = circle
     self.Enabled = false
     self.Aiming = false
     self.Active = true
     self.Connections = {}
-
-    print("[AimAssist] new() - config:", tostring(config ~= nil), "circle:", tostring(circle ~= nil))
-    
     return self
 end
 
@@ -38,7 +31,6 @@ function AimAssist:GetTargetPart(character, partType)
             or character:FindFirstChild("LeftUpperLeg")
         local rl = character:FindFirstChild("Right Leg") 
             or character:FindFirstChild("RightUpperLeg")
-        if ll and rl then return ll end
         if ll then return ll end
         if rl then return rl end
     end
@@ -46,13 +38,45 @@ function AimAssist:GetTargetPart(character, partType)
 end
 
 function AimAssist:IsVisible(part)
-    local origin = Camera.CFrame.Position
-    local direction = part.Position - origin
+    local char = LocalPlayer.Character
+    if not char then return false end
+
+    -- Monta filtro: ignora seu personagem inteiro + ferramentas + acessórios
+    local blacklist = {char}
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then table.insert(blacklist, hrp) end
+    local head = char:FindFirstChild("Head")
+    if head then table.insert(blacklist, head) end
+
     local params = RaycastParams.new()
     params.FilterType = Enum.RaycastFilterType.Blacklist
-    params.FilterDescendantsInstances = {LocalPlayer.Character}
-    local result = Workspace:Raycast(origin, direction, params)
-    return not result or result.Instance:IsDescendantOf(part.Parent)
+    params.FilterDescendantsInstances = blacklist
+
+    local direction = part.Position - Camera.CFrame.Position
+
+    -- Tenta raycast da câmera
+    local result = Workspace:Raycast(Camera.CFrame.Position, direction, params)
+    if not result then return true end
+    if result.Instance:IsDescendantOf(part.Parent) then return true end
+
+    -- Se câmera tá bloqueada (terceira pessoa atrás de parede),
+    -- tenta raycast da cabeça do jogador
+    if head then
+        local dir2 = part.Position - head.Position
+        local result2 = Workspace:Raycast(head.Position, dir2, params)
+        if not result2 then return true end
+        if result2.Instance:IsDescendantOf(part.Parent) then return true end
+    end
+
+    -- Tenta do HRP também
+    if hrp then
+        local dir3 = part.Position - hrp.Position
+        local result3 = Workspace:Raycast(hrp.Position, dir3, params)
+        if not result3 then return true end
+        if result3.Instance:IsDescendantOf(part.Parent) then return true end
+    end
+
+    return false
 end
 
 function AimAssist:GetClosestTarget()
@@ -95,7 +119,6 @@ function AimAssist:GetClosestTarget()
 end
 
 function AimAssist:Start()
-    print("[AimAssist] Start()")
     RunService:BindToRenderStep("AimAssistSnap", Enum.RenderPriority.Camera.Value + 2, function()
         if not self.Active or not self.Enabled or not self.Aiming then return end
         local target = self:GetClosestTarget()
@@ -115,7 +138,6 @@ end
 
 function AimAssist:SetAiming(state)
     self.Aiming = state
-    print("[AimAssist] SetAiming ->", tostring(state))
 end
 
 function AimAssist:Toggle()
@@ -125,12 +147,10 @@ function AimAssist:Toggle()
         self.Circle.Visible = self.Enabled and self.Config.Data.Settings.FOVMode
     end
     self.Config.Save()
-    print("[AimAssist] Toggle() ->", tostring(self.Enabled))
     return self.Enabled
 end
 
 function AimAssist:Destroy()
-    print("[AimAssist] Destroy()")
     self.Active = false
     self.Enabled = false
     self.Aiming = false
